@@ -3,8 +3,10 @@
 failed_logins() {
 
     echo
-    echo "==== Failed Login Attempts ===="
+    echo "==== Failed Login Summary ===="
 
+    count=$(sudo lastb | wc -l)
+    echo "Total Failed Login Attempts: $count"
     sudo lastb | head -20
 
 }
@@ -12,12 +14,55 @@ failed_logins() {
 successful_logins() {
 
     echo
-    echo "==== Successful Logins ===="
+    echo "==== Successful Login Summary ===="
 
     last | head -20
 
 }
 
+search_user() {
+
+    read -p "Enter username to search: " username
+    echo
+    echo "==== Login Summary for $username ===="
+
+    sudo last | grep "$username" | head -20
+
+    if [ -z "$username" ]; then
+        echo "No records found for user: $username"
+    fi
+
+}
+
+search_ip() {
+
+    read -p "Enter IP address to search: " ip_address
+    echo
+    echo "==== Login Summary for IP $ip_address ===="
+
+    sudo last | grep "$ip_address" | head -20
+
+    if [ -z "$ip_address" ]; then
+        echo "No records found for IP: $ip_address"
+    fi
+
+}
+
+export_report() {
+
+    timestamp=$(date +%Y%m%d_%H%M%S)
+
+    report="login_report_$timestamp.txt"
+
+    {
+        echo "==== Failed Login Summary ===="
+        sudo lastb | head -20
+        echo
+        echo "==== Successful Login Summary ===="
+        last | head -20
+    } > "$report"
+    echo "Report exported to $report"
+}
 while true
 do
     clear
@@ -27,9 +72,12 @@ do
     echo "========================="
 
     echo
-    echo "1) Failed Login Attempts"
-    echo "2) Successful Logins"
-    echo "3) Exit"
+    echo "1) Failed Login Summary"
+    echo "2) Successful Login Summary"
+    echo "3) Search User"
+    echo "4) Search IP"
+    echo "5) Export Report"
+    echo "6) Exit"
 
     echo
     read -p "Choose: " choice
@@ -45,6 +93,18 @@ do
             ;;
 
         3)
+            search_user
+            ;;
+
+        4)
+            search_ip
+            ;;
+
+        5)
+            export_report
+            ;;
+
+        6)
             break
             ;;
 
